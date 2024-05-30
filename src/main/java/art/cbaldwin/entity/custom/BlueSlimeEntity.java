@@ -2,7 +2,9 @@ package art.cbaldwin.entity.custom;
 
 import art.cbaldwin.SimpleSlimes;
 import art.cbaldwin.entity.SlimeEntities;
+import art.cbaldwin.entity.animation.SlimeAnimations;
 import art.cbaldwin.entity.client.BlueSlimeModel;
+import net.minecraft.client.render.entity.animation.Animation;
 import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.*;
@@ -44,6 +46,8 @@ public class BlueSlimeEntity extends AnimalEntity {
     public final AnimationState jumpFallAnimationState = new AnimationState();
     public final AnimationState jumpLandAnimationState = new AnimationState();
 
+    public Animation currentAnimation = SlimeAnimations.JUMP_UP;
+
     public BlueSlimeEntity(EntityType<? extends AnimalEntity> entityType, World world) {
         super(entityType, world);
         slimeSize = Random.create().nextFloat() + 0.7f;
@@ -61,11 +65,12 @@ public class BlueSlimeEntity extends AnimalEntity {
         super.tick();
         if (this.getWorld().isClient()){
             idleAnimationState.startIfNotRunning(this.age);
+            jumpUpAnimationState.startIfNotRunning(this.age);
+
         }
     }
 
     public void playJumpUp() {
-        jumpUpAnimationState.startIfNotRunning(this.age);
     }
 
 
