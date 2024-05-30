@@ -53,10 +53,7 @@ public class BlueSlimeEntity extends AnimalEntity {
     @Override
     protected void initGoals() {
         this.goalSelector.add(0, new SlimeMateGoal(this, 1, this));
-        this.goalSelector.add(1, new SwimGoal(this));
-        this.goalSelector.add(2, new AnimalMateGoal(this, 10.0));
-        this.goalSelector.add(3, new TemptGoal(this, 1.0, Ingredient.ofItems(Items.RAW_COPPER), false));
-        this.goalSelector.add(8, new WanderAroundFarGoal(this, 1.0));
+        this.goalSelector.add(2, new SlimeWanderGoal(this));
 
        // this.targetSelector.add(3, new RevengeGoal(this, new Class[0]).setGroupRevenge(new Class[0]));
     }

@@ -23,15 +23,18 @@ public class SlimeMateGoal extends AnimalMateGoal {
         /*this.animal.getLookControl().lookAt(this.mate, 10.0F, (float)this.animal.getMaxLookPitchChange());
         this.animal.getNavigation().startMovingTo(this.mate, this.speed);*/
 
-        this.slime.lookAtEntity(this.mate, 10.0F, 10.0F);
+        this.slime.lookAtEntity(this.mate, 30.0F, 30.0F);
         SimpleSlimeMoveControl moveControl = this.slime.getSlimeMoveControl();
         if (moveControl instanceof SimpleSlimeMoveControl ) {
             moveControl.look(this.slime.getYaw(), true);
+            moveControl.move(2.0);
         }
 
-        ++this.timer;
-        if (this.timer >= this.getTickCount(60) && this.animal.squaredDistanceTo(this.mate) < 9.0) {
-            this.breed();
+        if (this.animal.squaredDistanceTo(this.mate) < 1f) {
+            ++this.timer;
+            if (this.timer >= this.getTickCount(20) ) {
+                this.breed();
+            }
         }
 
     }
