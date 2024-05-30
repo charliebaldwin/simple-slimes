@@ -18,6 +18,9 @@
 		"main": [
 			"art.cbaldwin.SimpleSlimes"
 		],
+		"client": [
+			"art.cbaldwin.SimpleSlimesClient"
+		],
 		"fabric-datagen": [
 			"art.cbaldwin.SimpleSlimesDataGenerator"
 		]
