@@ -3,6 +3,7 @@ package art.cbaldwin.entity.custom;
 import art.cbaldwin.SimpleSlimes;
 import art.cbaldwin.entity.SlimeEntities;
 import art.cbaldwin.entity.client.BlueSlimeModel;
+import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -38,6 +39,11 @@ public class BlueSlimeEntity extends AnimalEntity {
     private static final TrackedData<Float> SLIME_SIZE;
     private boolean onGroundLastTick;
 
+    public final AnimationState idleAnimationState = new AnimationState();
+    public final AnimationState jumpUpAnimationState = new AnimationState();
+    public final AnimationState jumpFallAnimationState = new AnimationState();
+    public final AnimationState jumpLandAnimationState = new AnimationState();
+
     public BlueSlimeEntity(EntityType<? extends AnimalEntity> entityType, World world) {
         super(entityType, world);
         slimeSize = Random.create().nextFloat() + 0.7f;
@@ -49,6 +55,19 @@ public class BlueSlimeEntity extends AnimalEntity {
     static {
         SLIME_SIZE = DataTracker.registerData(BlueSlimeEntity.class, TrackedDataHandlerRegistry.FLOAT);
     }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.getWorld().isClient()){
+            idleAnimationState.startIfNotRunning(this.age);
+        }
+    }
+
+    public void playJumpUp() {
+        jumpUpAnimationState.startIfNotRunning(this.age);
+    }
+
 
     @Override
     protected void initGoals() {

@@ -51,6 +51,7 @@ public class SimpleSlimeMoveControl extends MoveControl {
                     if (this.slime.makesJumpSound()) {
                         this.slime.playSound(this.slime.getJumpSound(), this.slime.getSoundVolume(), this.slime.getJumpSoundPitch());
                     }
+                    this.slime.playJumpUp();
                 } else {
                     this.slime.sidewaysSpeed = 0.0F;
                     this.slime.forwardSpeed = 0.0F;
