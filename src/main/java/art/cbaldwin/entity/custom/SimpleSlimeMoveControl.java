@@ -63,4 +63,20 @@ public class SimpleSlimeMoveControl extends MoveControl {
 
         }
     }
+
+    public float getYVelocity() {
+        return this.entity.upwardSpeed;
+    }
+
+    public boolean isGrounded(){
+        return this.entity.isOnGround();
+    }
+
+    public boolean groundCollision() {
+        return this.entity.groundCollision;
+    }
+
+    public boolean isFalling() {
+        return this.entity.upwardSpeed < 0f;
+    }
 }

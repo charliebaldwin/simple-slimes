@@ -41,7 +41,7 @@ public class BlueSlimeModel<T extends BlueSlimeEntity> extends SinglePartEntityM
 	}
 	@Override
 	public void setAngles(BlueSlimeEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-		//this.animate(SlimeAnimations.IDLE);
+		/*//this.animate(SlimeAnimations.IDLE);
 		this.getPart().traverse().forEach(ModelPart::resetTransform);
 		this.updateAnimation(entity.jumpUpAnimationState, SlimeAnimations.JUMP_UP, ageInTicks);
 		//this.updateAnimation(entity.idleAnimationState, SlimeAnimations.IDLE, ageInTicks);
@@ -51,7 +51,7 @@ public class BlueSlimeModel<T extends BlueSlimeEntity> extends SinglePartEntityM
 		//this.animateMovement(SlimeAnimations.IDLE, limbSwing, limbSwingAmount, 0f, 0f);
 		//this.animate(entity.currentAnimation);
 
-		//this.animate(SlimeAnimations.IDLE);
+		//this.animate(SlimeAnimations.IDLE);*/
 
 	}
 	@Override

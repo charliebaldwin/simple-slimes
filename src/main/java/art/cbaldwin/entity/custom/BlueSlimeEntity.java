@@ -5,7 +5,7 @@ import art.cbaldwin.entity.SlimeEntities;
 import art.cbaldwin.entity.animation.SlimeAnimations;
 import art.cbaldwin.entity.client.BlueSlimeModel;
 import net.minecraft.client.render.entity.animation.Animation;
-import net.minecraft.entity.AnimationState;
+//import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -29,10 +29,19 @@ import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.UUID;
 
-public class BlueSlimeEntity extends AnimalEntity {
+public class BlueSlimeEntity extends AnimalEntity implements GeoEntity {
 /*   private static final TrackedData<Integer> ANGER_TIME;
    private static final UniformIntProvider ANGER_TIME_RANGE;
    @Nullable
@@ -41,38 +50,58 @@ public class BlueSlimeEntity extends AnimalEntity {
     private static final TrackedData<Float> SLIME_SIZE;
     private boolean onGroundLastTick;
 
-    public final AnimationState idleAnimationState = new AnimationState();
+    /*public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState jumpUpAnimationState = new AnimationState();
     public final AnimationState jumpFallAnimationState = new AnimationState();
-    public final AnimationState jumpLandAnimationState = new AnimationState();
+    public final AnimationState jumpLandAnimationState = new AnimationState();*/
 
-    public Animation currentAnimation = SlimeAnimations.JUMP_UP;
+   // public Animation currentAnimation = SlimeAnimations.JUMP_UP;
+
+    public static final RawAnimation ANIM_IDLE = RawAnimation.begin().thenLoop("idle");
+    public static final RawAnimation ANIM_JUMP_UP = RawAnimation.begin().thenPlay("jump_up");
+    public static final RawAnimation ANIM_JUMP_FALL = RawAnimation.begin().thenPlayAndHold("jump_fall");
+    public static final RawAnimation ANIM_JUMP_LAND = RawAnimation.begin().thenPlay("jump_land");
+
+    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
 
     public BlueSlimeEntity(EntityType<? extends AnimalEntity> entityType, World world) {
         super(entityType, world);
         slimeSize = Random.create().nextFloat() + 0.7f;
         this.moveControl = new SimpleSlimeMoveControl(this);
-        setSlimeSize(Random.create().nextFloat() + 0.7f);
+        setSlimeSize(slimeSize);
         super.calculateDimensions();
     }
 
     static {
         SLIME_SIZE = DataTracker.registerData(BlueSlimeEntity.class, TrackedDataHandlerRegistry.FLOAT);
     }
+    protected void initDataTracker() {
+        super.initDataTracker();
+        this.dataTracker.startTracking(SLIME_SIZE, 1f);
+    }
+    public float getSlimeSize() {
+        //return slimeSize;
+        return (float) this.dataTracker.get(SLIME_SIZE);
+    }
+    public void setSlimeSize(float newSize) {
+        slimeSize = newSize;
+        this.dataTracker.set(SLIME_SIZE, newSize);
+
+    }
+
 
     @Override
     public void tick() {
         super.tick();
-        if (this.getWorld().isClient()){
+        /*if (this.getWorld().isClient()){
             idleAnimationState.startIfNotRunning(this.age);
             jumpUpAnimationState.startIfNotRunning(this.age);
 
-        }
+        }*/
     }
 
     public void playJumpUp() {
     }
-
 
     @Override
     protected void initGoals() {
@@ -89,25 +118,9 @@ public class BlueSlimeEntity extends AnimalEntity {
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2);
     }
 
-    protected void initDataTracker() {
-        super.initDataTracker();
-        this.dataTracker.startTracking(SLIME_SIZE, 1f);
-    }
-
     @Override
     public boolean isBreedingItem(ItemStack stack) {
         return stack.isOf(Items.RAW_COPPER);
-    }
-
-    public float getSlimeSize() {
-        //return slimeSize;
-        return (float) this.dataTracker.get(SLIME_SIZE);
-    }
-
-    public void setSlimeSize(float newSize) {
-        slimeSize = newSize;
-        this.dataTracker.set(SLIME_SIZE, newSize);
-
     }
 
     public SimpleSlimeMoveControl getSlimeMoveControl() {
@@ -153,6 +166,41 @@ public class BlueSlimeEntity extends AnimalEntity {
     float getJumpSoundPitch() {
         float f = slimeSize < 0.7 ? 1.4F : 0.8F;
         return ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * f;
+    }
+
+
+    // Geckolib
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "controller", 1, this::slimeAnimController));
+    }
+    protected <E extends GeoAnimatable> PlayState slimeAnimController(final AnimationState<E> state) {
+        /*if (getSlimeMoveControl().isGrounded()){
+            state.setAnimation(RawAnimation.begin().thenLoop("idle"));
+        }*/
+
+        if (!getSlimeMoveControl().isFalling() && !getSlimeMoveControl().isGrounded()) {
+            state.setAnimation(RawAnimation.begin().thenPlayAndHold("jump_up"));
+        }
+
+        if (state.isCurrentAnimation(RawAnimation.begin().thenPlayAndHold("jump_up")) && getSlimeMoveControl().isFalling()) {
+            SimpleSlimes.LOGGER.info("playing jump_fall");
+            state.setAnimation(RawAnimation.begin().thenPlayAndHold("jump_fall"));
+        }
+
+        if ((state.isCurrentAnimation(RawAnimation.begin().thenPlayAndHold("jump_up")) || state.isCurrentAnimation(RawAnimation.begin().thenPlayAndHold("jump_fall")))
+            && getSlimeMoveControl().isGrounded()) {
+            SimpleSlimes.LOGGER.info("playing jump_land");
+            return state.setAndContinue(RawAnimation.begin().thenPlay("jump_land").thenLoop("idle"));
+        }
+
+
+
+        return PlayState.CONTINUE;
+    }
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.geoCache;
     }
 
 /*
