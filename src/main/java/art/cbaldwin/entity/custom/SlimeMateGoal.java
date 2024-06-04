@@ -30,9 +30,13 @@ public class SlimeMateGoal extends AnimalMateGoal {
             moveControl.move(2.0);
         }
 
-        if (this.animal.squaredDistanceTo(this.mate) < 1f) {
+        float distanceToMate = 1f;
+        distanceToMate += 0.5f * this.slime.getSlimeSize();
+        distanceToMate += 0.5f * ((BlueSlimeEntity)this.mate).getSlimeSize();
+
+        if (this.animal.squaredDistanceTo(this.mate) < distanceToMate) {
             ++this.timer;
-            if (this.timer >= this.getTickCount(20) ) {
+            if (this.timer >= this.getTickCount(12) ) {
                 this.breed();
             }
         }

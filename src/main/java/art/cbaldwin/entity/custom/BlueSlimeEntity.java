@@ -4,9 +4,10 @@ import art.cbaldwin.SimpleSlimes;
 import art.cbaldwin.entity.SlimeEntities;
 import art.cbaldwin.entity.animation.SlimeAnimations;
 import art.cbaldwin.entity.client.BlueSlimeModel;
+import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.client.render.entity.animation.Animation;
 //import net.minecraft.entity.AnimationState;
-import net.minecraft.entity.EntityType;
+import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -20,6 +21,7 @@ import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
@@ -27,6 +29,8 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.LocalDifficulty;
+import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -39,6 +43,7 @@ import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import javax.xml.crypto.Data;
 import java.util.UUID;
 
 public class BlueSlimeEntity extends AnimalEntity implements GeoEntity {
@@ -47,7 +52,7 @@ public class BlueSlimeEntity extends AnimalEntity implements GeoEntity {
    @Nullable
    private UUID angryAt;*/
     public float slimeSize;
-    private static final TrackedData<Float> SLIME_SIZE;
+    private static final TrackedData<Float> SLIME_SIZE = DataTracker.registerData(BlueSlimeEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private boolean onGroundLastTick;
 
     /*public final AnimationState idleAnimationState = new AnimationState();
@@ -65,30 +70,61 @@ public class BlueSlimeEntity extends AnimalEntity implements GeoEntity {
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
 
     public BlueSlimeEntity(EntityType<? extends AnimalEntity> entityType, World world) {
-        super(entityType, world);
-        slimeSize = Random.create().nextFloat() + 0.7f;
+        super((EntityType<? extends AnimalEntity>) entityType, world);
         this.moveControl = new SimpleSlimeMoveControl(this);
-        setSlimeSize(slimeSize);
-        super.calculateDimensions();
-    }
 
-    static {
-        SLIME_SIZE = DataTracker.registerData(BlueSlimeEntity.class, TrackedDataHandlerRegistry.FLOAT);
+
+        /*if (slimeSize == 0) {
+            slimeSize = Random.create().nextFloat() + 0.7f;
+            setSlimeSize(slimeSize);
+        }*/
     }
+    /*static {
+        SLIME_SIZE = DataTracker.registerData(BlueSlimeEntity.class, TrackedDataHandlerRegistry.FLOAT);
+    }*/
+    @Override
     protected void initDataTracker() {
         super.initDataTracker();
-        this.dataTracker.startTracking(SLIME_SIZE, 1f);
+        this.dataTracker.startTracking(SLIME_SIZE, (float)1);
     }
     public float getSlimeSize() {
         //return slimeSize;
         return (float) this.dataTracker.get(SLIME_SIZE);
     }
-    public void setSlimeSize(float newSize) {
-        slimeSize = newSize;
-        this.dataTracker.set(SLIME_SIZE, newSize);
 
+    @VisibleForTesting
+    public void setSlimeSize(float newSize) {
+        this.dataTracker.set(SLIME_SIZE, newSize);
+        this.slimeSize = newSize;
+        this.refreshPosition();
+        this.calculateDimensions();
+        /*NbtCompound nbtData = new NbtCompound();
+        nbtData.putFloat("simple-slimes.slime_size", newSize);
+        this.saveNbt(nbtData);*/
     }
 
+    @Override
+    @Nullable
+    public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityNbt) {
+        this.setSlimeSize(Random.create().nextFloat() + 0.7f);
+        SimpleSlimes.LOGGER.info("initialize size: {}", this.getSlimeSize());
+        return super.initialize(world, difficulty, spawnReason, entityData, entityNbt);
+    }
+
+    @Override
+    public void writeCustomDataToNbt(NbtCompound nbt) {
+        nbt.putFloat("slime_size", (float)this.getSlimeSize());
+    }
+
+    @Override
+    public void readCustomDataFromNbt(NbtCompound nbt) {
+        this.setSlimeSize(nbt.getFloat("slime_size"));
+    }
+
+    @Override
+    public EntityDimensions getDimensions(EntityPose pose) {
+        return super.getDimensions(pose).scaled(1f * (float)this.getSlimeSize());
+    }
 
     @Override
     public void tick() {
@@ -130,8 +166,8 @@ public class BlueSlimeEntity extends AnimalEntity implements GeoEntity {
     @Nullable
     @Override
     public PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
-        float combinedSize = slimeSize + ((BlueSlimeEntity)entity).getSlimeSize();
-        SimpleSlimes.LOGGER.info("parent 1 size: {}", slimeSize);
+        float combinedSize = this.getSlimeSize() + ((BlueSlimeEntity)entity).getSlimeSize();
+        SimpleSlimes.LOGGER.info("parent 1 size: {}", this.getSlimeSize());
         SimpleSlimes.LOGGER.info("parent 2 size: {}", ((BlueSlimeEntity)entity).getSlimeSize());
         SimpleSlimes.LOGGER.info("combined size: {}", combinedSize);
 
@@ -155,16 +191,16 @@ public class BlueSlimeEntity extends AnimalEntity implements GeoEntity {
 
     // Sounds
     protected float getSoundVolume() {
-        return 0.4F * slimeSize;
+        return 0.4F * this.getSlimeSize();
     }
     protected boolean makesJumpSound() {
-        return slimeSize > 0;
+        return this.getSlimeSize() > 0;
     }
     protected SoundEvent getJumpSound() {
-        return slimeSize < 0.7 ? SoundEvents.ENTITY_SLIME_JUMP_SMALL : SoundEvents.ENTITY_SLIME_JUMP;
+        return this.getSlimeSize() < 0.7 ? SoundEvents.ENTITY_SLIME_JUMP_SMALL : SoundEvents.ENTITY_SLIME_JUMP;
     }
     float getJumpSoundPitch() {
-        float f = slimeSize < 0.7 ? 1.4F : 0.8F;
+        float f = this.getSlimeSize() < 0.7 ? 1.4F : 0.8F;
         return ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * f;
     }
 
@@ -202,31 +238,4 @@ public class BlueSlimeEntity extends AnimalEntity implements GeoEntity {
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.geoCache;
     }
-
-/*
-   protected void initDataTracker() {
-        super.initDataTracker();
-        this.dataTracker.startTracking(ANGER_TIME, 0);
-    }
-
-    public int getAngerTime() {
-        return (Integer)this.dataTracker.get(ANGER_TIME);
-    }
-
-    public void setAngerTime(int angerTime) {
-        this.dataTracker.set(ANGER_TIME, angerTime);
-    }
-
-    public void chooseRandomAngerTime() {
-        this.setAngerTime(ANGER_TIME_RANGE.get(this.random));
-    }
-
-    @Nullable
-    public UUID getAngryAt() {
-        return this.angryAt;
-    }
-
-    public void setAngryAt(@Nullable UUID angryAt) {
-        this.angryAt = angryAt;
-    }*/
 }

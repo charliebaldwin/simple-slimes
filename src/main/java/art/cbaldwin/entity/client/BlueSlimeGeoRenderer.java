@@ -2,6 +2,7 @@ package art.cbaldwin.entity.client;
 
 import art.cbaldwin.SimpleSlimes;
 import art.cbaldwin.entity.custom.BlueSlimeEntity;
+import art.cbaldwin.entity.layer.BlueSlimeOuterLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
@@ -22,17 +23,14 @@ public class BlueSlimeGeoRenderer extends GeoEntityRenderer<BlueSlimeEntity> {
 
     @Override
     public void render(BlueSlimeEntity entity, float entityYaw, float partialTick, MatrixStack poseStack, VertexConsumerProvider bufferSource, int packedLight) {
-        this.shadowRadius = 0.75F * (float)Math.sqrt(entity.getSlimeSize());
 
-        float s = entity.getSlimeSize();
-        //s = 1f;
+        float s = (float) entity.getSlimeSize();
+        //this.shadowRadius = 0.15f * s;
+        this.shadowRadius = 0.3f;
+        poseStack.scale(0.5f, 0.5f, 0.5f);
+        poseStack.translate(0.0f, 0.001f, 0.0f);
+        poseStack.scale(s, s, s);
 
-        if (entity.isBaby()) {
-            //matrixStack.scale(0.5f, 0.5f, 0.5f);
-            poseStack.scale(s, s, s);
-        } else {
-            poseStack.scale(s, s, s);
-        }
         super.render(entity, entityYaw, partialTick, poseStack, bufferSource, packedLight);
     }
 }

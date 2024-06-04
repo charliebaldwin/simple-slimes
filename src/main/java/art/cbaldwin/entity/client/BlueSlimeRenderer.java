@@ -30,7 +30,7 @@ public class BlueSlimeRenderer extends MobEntityRenderer<BlueSlimeEntity, BlueSl
 
     @Override
     public void render(BlueSlimeEntity mobEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
-        this.shadowRadius = 0.35F * mobEntity.slimeSize;
+        this.shadowRadius = 0.35F * mobEntity.getSlimeSize();
 
         float s = mobEntity.getSlimeSize();
         //s = 1f;

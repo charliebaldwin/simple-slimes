@@ -7,9 +7,12 @@ package art.cbaldwin.entity.client;
 import art.cbaldwin.entity.animation.SlimeAnimations;
 import art.cbaldwin.entity.custom.BlueSlimeEntity;
 import net.minecraft.client.model.*;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
+import software.bernie.example.entity.FakeGlassEntity;
 
 public class BlueSlimeModel<T extends BlueSlimeEntity> extends SinglePartEntityModel<T> {
 	private final ModelPart blue_slime;
@@ -58,6 +61,8 @@ public class BlueSlimeModel<T extends BlueSlimeEntity> extends SinglePartEntityM
 	public void render(MatrixStack matrices, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
 		blue_slime.render(matrices, vertexConsumer, light, overlay, red, green, blue, alpha);
 	}
+
+
 
 	@Override
 	public ModelPart getPart() {

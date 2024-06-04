@@ -15,6 +15,6 @@ public class SlimeEntities {
     public static final EntityType<BlueSlimeEntity> BLUE_SLIME = Registry.register(Registries.ENTITY_TYPE,
             new Identifier(SimpleSlimes.MOD_ID, "blue_slime"),
             FabricEntityTypeBuilder.create(SpawnGroup.CREATURE, BlueSlimeEntity::new)
-                    .dimensions(EntityDimensions.fixed(.5f, .5f))
+                    .dimensions(EntityDimensions.changing(.5f, .5f))
                     .build());
 }
